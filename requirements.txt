@@ -1,0 +1,1 @@
+python-levenshtein==0.12.0
