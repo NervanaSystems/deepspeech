@@ -1,10 +1,10 @@
 # Implementation of Deep Speech 2 in neon
 
-This repository contains an implementation of the Baidu SVAIL's deep speech 2 model [1] in neon. Much of the model is already readily available in mainline neon. To support the CTC cost function, we have included a neon-compatible wrapper Baidu's [Warp-CTC].
+This repository contains an implementation of Baidu SVAIL's [deep speech 2] (https://arxiv.org/abs/1512.02595) model in neon. Much of the model is readily available in mainline neon, but to support the CTC cost function we have included a neon-compatible wrapper for Baidu's [Warp-CTC].
   
 The deep speech 2 model is very computationally intensive. Even at near perfect GPU utilization, the model can take up to 1 week to train on large enough datasets to see respectable performance. Thus, we suggest the user keep this in mind when exploring this repo. We have used this code to train models on both the Wall Street Journal (81 hours) and Librispeech (1000 hours) datasets. The WSJ dataset is only available through the LDC, but Librispeech can be freely acquired from <http://www.openslr.org/12/>.
  
-The model presented here uses a simple argmax-based decoder, simply choosing the most probable character in each frame and then collapsing the resulting output string according to CTC's rules (first remove repeat characters, then remove blank characters). With this decoding, you might expect outputs like this when trained on WSJ:
+The model presented here uses a basic argmax-based decoder, simply choosing the most probable character in each frame and then collapsing the resulting output string according to CTC's rules (first remove repeat characters, then remove blank characters). With this decoding, you might expect outputs like this when trained on WSJ:
 
 | Ground truth                    | Model output                      |
 |---------------------------------|-----------------------------------|
@@ -13,7 +13,7 @@ The model presented here uses a simple argmax-based decoder, simply choosing the
 | we're not ready to say we're in technical default a spokesman said | we're now ready to say we're intechnical default a spokesman said | 
 
 ## Getting Started
-1. Make sure you have [neon] (https://github.com/NervanaSystems/neon) installed.
+1. Make sure you have [neon] (https://github.com/NervanaSystems/neon) installed.  
     a. This repo also uses the [aeon] (https://github.com/NervanaSystems/aeon) dataloader. If you chose not to install it with neon, you must install it manually.
 
 2. Within a neon virtualenv, run ```pip install python-levenshtein```.
@@ -77,5 +77,4 @@ Once you have a trained model, you can easily evaluate its performance on any gi
  ```
 Replacing the file paths as needed. This will print out character error rates by default. To print word error rates, include the argument `--use_wer`.
 
-[1]: https://arxiv.org/abs/1512.02595
 [Warp-CTC]: https://github.com/baidu-research/warp-ctc
