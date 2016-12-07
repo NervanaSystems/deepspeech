@@ -12,12 +12,6 @@ The model presented here uses a simple argmax-based decoder, simply choosing the
 | that was certainly true last week | that was sertainly true last week |
 | we're not ready to say we're in technical default a spokesman said | we're now ready to say we're intechnical default a spokesman said | 
 
-TODO: When trained on 1000 hours of Librispeech, you might expect outputs like this:
-
-| Ground truth | Model output |
-|--------------|--------------|
-|    |    |
-
 ## Getting Started
 1. Make sure you have [neon] (https://github.com/NervanaSystems/neon) installed.
     a. This repo also uses the [aeon] (https://github.com/NervanaSystems/aeon) dataloader. If you chose not to install it with neon, you must install it manually.
@@ -74,7 +68,7 @@ python train.py --manifest train:<training manifest> --manifest val:<validation 
 where `<training manifest>` is the path to the training manifest file produced in the ingest step above (e.g. ``/usr/local/data/librispeech/train-clean-100/train-manifest.csv`` in the example above) and `<validation manifest>` is the path to the validation manifest file.
  
 ### 2b. Continue training a previous model
-TODO: If you have a previously trained model, you can resume training by passing the `--model_file </path/to/stored_model.pkl>` argument to `train.py`. We provide XX previously trained models for anyone to use. They can be downloaded from [here] <model file urls>.
+If you have a previously trained model, you can resume training by passing the `--model_file </path/to/stored_model.pkl>` argument to `train.py`. Soon we will provide a model trained on the 1000 hour Librispeech dataset and will provide details on how to download and use the model at that time. 
 
 ## Decoding and evaluating a trained model
 Once you have a trained model, you can easily evaluate its performance on any given dataset. Simply create a manifest file and then call:
