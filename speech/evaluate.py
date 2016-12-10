@@ -102,12 +102,12 @@ model = Model(args.model_file)
 wer, sample_size, results = get_wer(model, be, eval_set, argmax_decoder, nout,
                                     use_wer=args.use_wer)
 
-print("-" * 80)
+print("\n" + "-" * 80)
 if args.use_wer:
     print("wer = {}".format(wer))
 else:
     print("cer = {}".format(wer))
-print("-" * 80)
+print("-" * 80 + "\n")
 
 if args.inference_file:
     # Save results in args.inference_file

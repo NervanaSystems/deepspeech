@@ -50,13 +50,13 @@ arg_defaults = {'batch_size': 32}
 
 parser = NeonArgparser(__doc__, default_overrides=arg_defaults)
 parser.add_argument('--nfilters', type=int,
-                    help='no. of conv filters', default=1280)
+                    help='no. of conv filters', default=1152)
 parser.add_argument('--filter_width', type=int,
                     help='width of conv filter', default=11)
 parser.add_argument('--str_w', type=int, help='stride in time', default=3)
-parser.add_argument('--depth', type=int, help='rnn depth', default=3)
+parser.add_argument('--depth', type=int, help='rnn depth', default=9)
 parser.add_argument('--hidden_size', type=int,
-                    help='affine/rnn hidden units', default=1280)
+                    help='affine/rnn hidden units', default=1152)
 parser.add_argument('--lr', type=float,
                     help='learning rate', default=2e-5)
 parser.add_argument('--momentum', type=float,

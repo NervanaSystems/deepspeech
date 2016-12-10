@@ -15,6 +15,14 @@
 # ----------------------------------------------------------------------------
 
 import numpy as np
+import sys
+
+
+def get_progress_string(bsz, bcount, nbatches, blockchar=u'\u2588'):
+    max_bar_width = 50
+    bar_width = int(float(bcount) / nbatches * max_bar_width)
+    s = u'[|{:<%s}| processed {:4}/{:<4} examples]' % max_bar_width
+    return s.format(blockchar * bar_width, bcount * bsz, nbatches * bsz)
 
 def softmax(x):
     return (np.reciprocal(np.sum(
@@ -34,10 +42,9 @@ def decrypt(decoder, message):
     msg = decoder.convert_to_string(message)
     return decoder.process_string(msg, remove_repetitions=False)
 
-
 def get_wer(model, be, dataset, decoder, nout, use_wer=False):
     wer = 0
-    batch_count = 0
+    batchcount = 0
     predictions = list()
     targets = list()
     numitems = dataset.item_count
@@ -45,11 +52,9 @@ def get_wer(model, be, dataset, decoder, nout, use_wer=False):
 
     if not model.initialized:
         model.initialize(dataset)
-
+ 
     for x, y in dataset:
-        batch_count += 1
         probs = get_outputs(model, be, x, nout)
-
         strided_tmax = probs.shape[-1]
         flat_labels = y[0].get().ravel()
         tscrpt_lens = y[1].get().ravel()
@@ -66,8 +71,14 @@ def get_wer(model, be, dataset, decoder, nout, use_wer=False):
             else:
                 wer += decoder.wer(prediction, target) / \
                         float(len(target.split()))
-        print('processed {} of {} batches'.format(batch_count, nbatches))
-   
+        
+        progress_string = get_progress_string(be.bsz, batchcount, nbatches)
+        last_strlen = len(progress_string)
+        sys.stdout.write('\r' + ' ' * last_strlen + '\r')
+        sys.stdout.write(progress_string.encode("utf-8"))
+        sys.stdout.flush()
+        batchcount += 1
+
     results = zip(predictions, targets)
     nsamples = len(predictions)
     return wer / nsamples, nsamples , results
