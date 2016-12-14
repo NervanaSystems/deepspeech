@@ -122,13 +122,13 @@ def main(input_directory, transcript_directory, manifest_file):
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("manifest_file",
-                        help="Output file that specifies the filename for each"
-                        " output audio and transcript")
     parser.add_argument("input_directory",
                         help="Directory containing librispeech flac files")
     parser.add_argument("transcript_directory",
                         help="Directory to write transcript .txt files")
+    parser.add_argument("manifest_file",
+                        help="Output file that specifies the filename for each"
+                        " output audio and transcript")
 
     args = parser.parse_args()
     main(args.input_directory,
