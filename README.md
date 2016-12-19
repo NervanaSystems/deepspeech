@@ -77,7 +77,7 @@ which will save a new model to `model_output.prm`.
 ## Decoding and evaluating a trained model
 Once you have a trained model, you can easily evaluate its performance on any given dataset. Simply create a manifest file and then call:
  ```
- python evaluate.py --manifest val:/path/to/manifest.csv --model_file /path/to/saved_model.pkl
+ python evaluate.py --manifest val:/path/to/manifest.csv --model_file /path/to/saved_model.prm
  ```
 replacing the file paths as needed. This will print out character error rates by default. To print word error rates, include the argument `--use_wer`.
 
