@@ -12,6 +12,14 @@ The model presented here uses a basic argmax-based decoder, simply choosing the 
 | that was certainly true last week | that was sertainly true last week |
 | we're not ready to say we're in technical default a spokesman said | we're now ready to say we're intechnical default a spokesman said | 
 
+Or like this when trained on Librispeech (see "Decoding and evaluating a trained model"):
+
+| Ground truth                    | Model output                      |
+|---------------------------------|-----------------------------------|
+| this had some effect in calming him | this had some offectind calming him |
+| he went in and examined his letters but there was nothing from carrie | he went in an examined his letters but there was nothing from carry |
+| the design was different but the thing was clearly the same | the design was differampat that thing was clarly the same |
+
 ## Getting Started
 1. Make sure you have [neon] (https://github.com/NervanaSystems/neon) installed.  
     a. This repo also uses the [aeon] (https://github.com/NervanaSystems/aeon) dataloader. If you chose not to install it with neon, you must install it manually.
