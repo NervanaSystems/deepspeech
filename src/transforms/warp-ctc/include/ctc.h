@@ -96,7 +96,8 @@ ctcStatus_t compute_ctc_loss(const float* const activations,
                              void *workspace,
                              ctcComputeInfo info);
 
-int compute_ctc_gpu(const float* const activations,
+// Simple wrappers to enable neon support
+int compute_ctc_loss_cpu(const float* const activations,
                      float* gradients,
                      const int* const flat_labels,
                      const int* const label_lengths,
@@ -104,8 +105,26 @@ int compute_ctc_gpu(const float* const activations,
                      int alphabet_size,
                      int minibatch,
                      float *costs,
-                     CUstream stream,
-                     char *ctc_gpu_workspace);
+                     int num_threads);
+
+#ifdef __CUDACC__
+int get_workspace_size_gpu(const int* const label_lengths,
+                       const int* const input_lengths,
+                       int alphabet_size, int minibatch,
+                       CUstream stream);
+
+int compute_ctc_loss_gpu(const float* const activations,
+                     float* gradients,
+                     const int* const flat_labels,
+                     const int* const label_lengths,
+                     const int* const input_lengths,
+                     int alphabet_size,
+                     int minibatch,
+                     float *costs,
+                     void *workspace,
+                     CUstream stream);
+#endif
+
 
 /** For a given set of labels and minibatch size return the required workspace
  *  size.  This will need to be allocated in the same memory space as your
@@ -130,19 +149,6 @@ ctcStatus_t get_workspace_size(const int* const label_lengths,
                                int alphabet_size, int minibatch,
                                ctcComputeInfo info,
                                size_t* size_bytes);
-
-int get_workspace_size_gpu(int maxL, int maxT, int alphabet_size, int minibatch);
-
-/* Simpler interface to compute_ctc_loss for CPU */
-void cpu_ctc(float* acts, 
-             float* grads,
-             int* labels, 
-             int* label_lengths,
-             int* input_lengths,
-             int alphabet_size, 
-             int minibatch,
-             float* cost,
-             int num_threads);
 
 
 #ifdef __cplusplus

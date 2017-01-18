@@ -38,47 +38,6 @@ inline void throw_on_error(ctcStatus_t status, const char* message) {
     }
 }
 
-int compute_ctc_gpu(const float* const activations,
-                             float* gradients,
-                             const int* const flat_labels,
-                             const int* const label_lengths,
-                             const int* const input_lengths,
-                             int alphabet_size,
-                             int minibatch,
-                             float *costs,
-                             cudaStream_t stream,
-                             char *ctc_gpu_workspace){
-
-    if (activations == nullptr ||
-        flat_labels == nullptr ||
-        label_lengths == nullptr ||
-        input_lengths == nullptr ||
-        costs == nullptr ||
-        ctc_gpu_workspace == nullptr ||
-        alphabet_size <= 0 ||
-        minibatch <= 0)
-        return CTC_STATUS_INVALID_VALUE;
-
-#ifdef __CUDACC__
-        GpuCTC<float> ctc(alphabet_size, minibatch, ctc_gpu_workspace, stream);
-
-        if (gradients != NULL){
-            ctcStatus_t status;
-            status = ctc.cost_and_grad(activations, gradients, costs,
-                                     flat_labels, label_lengths,
-                                     input_lengths);
-            return int(status);
-        }
-        else{
-            return ctc.score_forward(activations, costs, flat_labels,
-                                     label_lengths, input_lengths);
-        }
-#else
-        std::cerr << "GPU execution requested, but not compiled with GPU support" << std::endl;
-        return int(CTC_STATUS_EXECUTION_FAILED);
-#endif
-}
-
 
 ctcStatus_t compute_ctc_loss(const float* const activations,
                              float* gradients,
@@ -130,54 +89,6 @@ ctcStatus_t compute_ctc_loss(const float* const activations,
     } else {
         return CTC_STATUS_INVALID_VALUE;
     }
-}
-
-
-int get_workspace_size_gpu(int maxL, int maxT, int alphabet_size, int minibatch)
-{
-    //maxL: max label length
-    //maxT: max input length
-    if (maxL <= 0 ||
-        maxT <= 0 ||
-        alphabet_size <= 0 ||
-        minibatch <= 0)
-        return int(CTC_STATUS_INVALID_VALUE);
-
-    const int S = 2 * maxL + 1;
-    int size_bytes = 0;
-
-    // GPU storage
-    //nll_forward, nll_backward
-    size_bytes += 2 * sizeof(float) * minibatch;
-
-    //repeats
-    size_bytes += sizeof(int) * minibatch;
-
-    //label offsets
-    size_bytes += sizeof(int) * minibatch;
-
-    //utt_length
-    size_bytes += sizeof(int) * minibatch;
-
-    //label lengths
-    size_bytes += sizeof(int) * minibatch;
-
-    //labels without blanks - overallocate for now
-    size_bytes += sizeof(int) * maxL * minibatch;
-
-    //labels with blanks
-    size_bytes += sizeof(int) * S * minibatch;
-
-    //alphas
-    size_bytes += sizeof(float) * S * maxT * minibatch;
-
-    //denoms
-    size_bytes += sizeof(float) * maxT * minibatch;
-
-    //probs (since we will pass in activations)
-    size_bytes += sizeof(float) * alphabet_size * maxT * minibatch;
-
-    return size_bytes;
 }
 
 
@@ -263,37 +174,94 @@ ctcStatus_t get_workspace_size(const int* const label_lengths,
     return CTC_STATUS_SUCCESS;
 }
 
-void cpu_ctc(float* acts, 
-             float* grads,
-             int* labels, 
-             int* label_lengths,
-             int* input_lengths,
-             int alphabet_size, 
-             int minibatch,
-             float* cost,
-             int num_threads)
-{
+/*
+Simple wrappers for neon compatibility
+*/
+#ifdef __CUDACC__
+int get_workspace_size_gpu(const int* const label_lengths,
+                       const int* const input_lengths,
+                       int alphabet_size, int minibatch,
+                       cudaStream_t stream) {
+    ctcComputeInfo info;
+    info.loc = CTC_GPU;
+    info.stream = stream;
+
+    size_t size_bytes;
+    get_workspace_size(label_lengths, input_lengths, alphabet_size,
+                       minibatch, info, &size_bytes);
+
+    return int(size_bytes);
+}
+
+
+int compute_ctc_loss_gpu(const float* const activations,
+                     float* gradients,
+                     const int* const flat_labels,
+                     const int* const label_lengths,
+                     const int* const input_lengths,
+                     int alphabet_size,
+                     int minibatch,
+                     float *costs,
+                     void *workspace,
+                     cudaStream_t stream) {
+
+    ctcComputeInfo info;
+    info.loc = CTC_GPU;
+    info.stream = stream;
+
+    ctcStatus_t status = compute_ctc_loss(activations,
+					  gradients,
+					  flat_labels,
+					  label_lengths,
+					  input_lengths,
+					  alphabet_size,
+					  minibatch,
+					  costs,
+					  workspace,
+					  info);
+
+    // Maybe call throw_on_error here?
+    return int(status);
+
+}
+#endif
+
+int compute_ctc_loss_cpu(const float* const activations,
+                     float* gradients,
+                     const int* const flat_labels,
+                     const int* const label_lengths,
+                     const int* const input_lengths,
+                     int alphabet_size,
+                     int minibatch,
+                     float *costs,
+                     int num_threads) {
     ctcComputeInfo info;
     info.loc = CTC_CPU;
     info.num_threads = num_threads;
 
-    size_t cpu_alloc_bytes;
-    get_workspace_size(label_lengths, input_lengths,
-                       alphabet_size, minibatch, info,
-                       &cpu_alloc_bytes);
+    size_t size_bytes;
+    get_workspace_size(label_lengths,
+                       input_lengths,
+                       alphabet_size,
+                       minibatch,
+                       info,
+                       &size_bytes);
 
-    void* ctc_cpu_workspace = malloc(cpu_alloc_bytes);
+    void* workspace = malloc(size_bytes);
 
-    compute_ctc_loss(acts, grads,
-                     labels, label_lengths,
-                     input_lengths,
-                     alphabet_size,
-                     minibatch,
-                     cost,
-                     ctc_cpu_workspace,
-                     info);
+    ctcStatus_t status = compute_ctc_loss(activations,
+                                          gradients,
+                                          flat_labels,
+                                          label_lengths,
+                                          input_lengths,
+                                          alphabet_size,
+                                          minibatch,
+                                          costs,
+                                          workspace,
+                                          info);
+    free(workspace);
 
-    free(ctc_cpu_workspace);
+    // Maybe call throw_on_error here?
+    return int(status);
 }
-
 }
