@@ -60,9 +60,8 @@ class WordErrorRateCallback(Callback):
         if noise_symbol is None:
             noise_symbol = ''
         cer = 0
-        batch_count = 1e-10
+        count = 0
         for x, y in dataset:
-            batch_count += 1
             probs = self.get_outputs(model, x)
             strided_tmax = probs.shape[-1]
             flat_labels = self.dev_to_host(y[0])[0,:]
@@ -74,12 +73,17 @@ class WordErrorRateCallback(Callback):
                 start = int(np.sum(tscrpt_lens[:mu]))
                 target = flat_labels[start:start + tscrpt_lens[mu]].tolist()
                 target = self.decrypt(self.decoder, target, noise_symbol)
-                cer += self.decoder.cer(prediction, target) / (1.0 * len(target))
-
+                label_len = len(target)
+                if label_len > 0:
+                    cer += self.decoder.cer(prediction, target) / (1.0 * label_len)
+                    count += 1
                 if mu == disp_indx:
                     disp_proposal = prediction
                     disp_target = target
-        return cer / (batch_count * self.be.bsz), disp_proposal, disp_target
+        if count > 0:
+            return cer / (float(count)), disp_proposal, disp_target
+        else:
+            return 1.0, disp_proposal, disp_target
 
     def on_epoch_end(self, callback_data, model, epoch):
         cer, disp_proposal, disp_target = self.get_wer(model, self.eval_set)
