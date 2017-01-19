@@ -43,7 +43,6 @@ class CTC(Cost):
             (1,self.max_s), dtype=np.uint8)
         self.host_labels = np.zeros(
             self.max_s*self.be.bsz, dtype=np.uint8)
-
     
     def init_buffer(self, y):
         if self.input_warp is None or self.y is None or self.y is not y:
@@ -137,7 +136,6 @@ class CTC(Cost):
 
         return self.ctc_cost
 
-
     def be_ctc(
                 self, 
                 nout, 
@@ -176,8 +174,6 @@ class CTC(Cost):
                 max_t)
         else:
             raise NotImplementedError()
-
-
 
     def be_ctc_mgpu(
                 self, 
@@ -253,8 +249,6 @@ class CTC(Cost):
         if self.parallelism == 'Data':
             label_lens.swap_shadow()
             labels.swap_shadow()
-
-
 
     def be_ctc_gpu(
             self,
