@@ -113,7 +113,7 @@ feats_config = dict(sample_freq_hz=16000,
 transcripts_config = dict(
     alphabet=alphabet,
     max_length=max_tscrpt_len,
-    pack_for_ctc=True)
+    pack_for_ctc=False)
 
 # Initialize training and validation dataloaders
 train_cfg_dict = dict(type="audio,transcription",
