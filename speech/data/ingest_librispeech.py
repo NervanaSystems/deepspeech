@@ -35,27 +35,6 @@ def write_manifest(output_file, *filenames):
     return True
 
 
-def get_files(directory, pattern, recursive=True):
-    """ Return the full path to all files in directory matching the specified
-    pattern.
-
-    pattern should be a glob style pattern (e.g. "*.wav")
-    """
-
-    # This yields an iterator which really speeds up looking through large, flat directories
-    if recursive is False:
-        it = glob.iglob(os.path.join(directory, pattern))
-        return it
-
-    # If we want to recurse, use os.walk instead
-    matches = list()
-    for root, dirnames, filenames in os.walk(directory):
-        matches.extend(map(lambda ss: os.path.join(root, ss),
-            fnmatch.filter(filenames, pattern)))
-
-    return matches
-
-
 def main(input_directory, transcript_directory, manifest_file):
     """ Finds all .flac files recursively in input_directory, then extracts the 
     transcript from the nearby .trans.txt file and stores it in
@@ -81,7 +60,7 @@ def main(input_directory, transcript_directory, manifest_file):
     if not os.path.exists(transcript_directory):
         os.makedirs(transcript_directory)
 
-    transcript_files = get_files(input_directory, pattern="*.txt")
+    transcript_files = glob.glob(os.path.join(input_directory, '*/*/*.txt'))
     if len(transcript_files) == 0:
         logger.error("No .txt files were found in {}".format(input_directory))
         return
