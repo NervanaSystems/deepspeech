@@ -28,11 +28,11 @@ from neon.initializers import GlorotUniform, Constant, Gaussian
 from neon.layers import Conv, GeneralizedCost, Affine, DeepBiRNN
 from neon.models import Model
 from neon.transforms import Rectlin, Identity, Rectlinclip
+from neon.optimizers import GradientDescentMomentum
 from neon.util.argparser import NeonArgparser, extract_valid_args
 
 from ctc import CTC
 from decoder import ArgMaxDecoder
-from gdmnesterov import GradientDescentMomentumNesterov
 from sample_proposals_callback import WordErrorRateCallback
 
 
@@ -170,9 +170,10 @@ layers = [
 
 model = Model(layers=layers)
 
-opt = GradientDescentMomentumNesterov(learning_rate, momentum,
-                                      gradient_clip_norm=gradient_clip_norm,
-                                      stochastic_round=False)
+opt = GradientDescentMomentum(learning_rate, momentum,
+                              gradient_clip_norm=gradient_clip_norm,
+                              stochastic_round=False,
+                              nesterov=True)
 callbacks = Callbacks(model, eval_set=dev, **args.callback_args)
 
 # Print validation set word error rate at the end of every epoch
