@@ -1,6 +1,6 @@
 # Implementation of Deep Speech 2 in neon
 
-This repository contains an implementation of Baidu SVAIL's [deep speech 2] (https://arxiv.org/abs/1512.02595) model in neon. Much of the model is readily available in mainline neon, but to support the CTC cost function we have included a neon-compatible wrapper for Baidu's [Warp-CTC].
+This repository contains an implementation of Baidu SVAIL's [deep speech 2](https://arxiv.org/abs/1512.02595) model in neon. Much of the model is readily available in mainline neon, but to support the CTC cost function we have included a neon-compatible wrapper for Baidu's [Warp-CTC].
   
 The deep speech 2 model is very computationally intensive. Even at near perfect GPU utilization, the model can take up to 1 week to train on large enough datasets to see respectable performance. Thus, we suggest the user keep this in mind when exploring this repo. We have used this code to train models on both the Wall Street Journal (81 hours) and Librispeech (1000 hours) datasets. The WSJ dataset is only available through the LDC, but Librispeech can be freely acquired from <http://www.openslr.org/12/>.
  
