@@ -20,7 +20,6 @@ Train ds2-style speech model on Librispeech
 import os
 import numpy as np
 
-from aeon.dataloader import DataLoader
 from neon.backends import gen_backend
 from neon.callbacks.callbacks import Callbacks
 from neon.data.dataloader_transformers import TypeCast, Retuple
@@ -34,16 +33,7 @@ from neon.util.argparser import NeonArgparser, extract_valid_args
 from ctc import CTC
 from decoder import ArgMaxDecoder
 from sample_proposals_callback import WordErrorRateCallback
-
-
-def data_transform(dl):
-    """ Data is loaded from Aeon as a 4-tuple. We need to cast the audio
-    (index 0) from int8 to float32 and repack the data into (audio, 3-tuple).
-    """
-
-    dl = TypeCast(dl, index=0, dtype=np.float32)
-    dl = Retuple(dl, data=(0,), target=(1, 2, 3))
-    return dl
+from data.ingest_librispeech import make_loader
 
 # Parse the command line arguments
 arg_defaults = {'batch_size': 32}
@@ -87,6 +77,9 @@ argmax_decoder = ArgMaxDecoder(alphabet, space_index=alphabet.index(" "))
 be = gen_backend(**extract_valid_args(args, gen_backend))
 
 # Setup dataloader
+nbands = 13
+max_tscrpt_len = 1300
+
 train_manifest = args.manifest['train']
 if not os.path.exists(train_manifest):
     raise RuntimeError(
@@ -96,42 +89,8 @@ if not os.path.exists(dev_manifest):
     raise RuntimeError(
         "validation manifest file {} not found".format(dev_manifest))
 
-# Setup required dataloader parameters
-nbands = 13
-max_utt_len = 30
-max_tscrpt_len = 1300
-
-# Audio transformation parameters
-feats_config = dict(sample_freq_hz=16000,
-                    max_duration="{} seconds".format(max_utt_len),
-                    frame_length=".025 seconds",
-                    frame_stride=".01 seconds",
-                    feature_type="mfsc",
-                    num_filters=nbands)
-
-# Transcript transformation parameters
-transcripts_config = dict(
-    alphabet=alphabet,
-    max_length=max_tscrpt_len,
-    pack_for_ctc=True)
-
-# Initialize training and validation dataloaders
-train_cfg_dict = dict(type="audio,transcription",
-                      audio=feats_config,
-                      transcription=transcripts_config,
-                      manifest_filename=train_manifest,
-                      macrobatch_size=be.bsz,
-                      minibatch_size=be.bsz)
-dev_cfg_dict = dict(type="audio,transcription",
-                    audio=feats_config,
-                    transcription=transcripts_config,
-                    manifest_filename=dev_manifest,
-                    macrobatch_size=be.bsz,
-                    minibatch_size=be.bsz)
-train = DataLoader(backend=be, config=train_cfg_dict)
-train = data_transform(train)
-dev = DataLoader(backend=be, config=dev_cfg_dict)
-dev = data_transform(dev)
+train = make_loader(train_manifest, alphabet, nbands, max_tscrpt_len, backend_obj=be)
+dev = make_loader(dev_manifest, alphabet, nbands, max_tscrpt_len, backend_obj=be)
 
 # Setup the layers of the DNN
 # Softmax is performed in warp-ctc, so we use an Identity activation in the
