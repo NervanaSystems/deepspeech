@@ -22,7 +22,6 @@ import numpy as np
 
 from neon.backends import gen_backend
 from neon.callbacks.callbacks import Callbacks
-from neon.data.dataloader_transformers import TypeCast, Retuple
 from neon.initializers import GlorotUniform, Constant, Gaussian
 from neon.layers import Conv, GeneralizedCost, Affine, DeepBiRNN
 from neon.models import Model
