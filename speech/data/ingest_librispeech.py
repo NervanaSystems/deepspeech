@@ -131,7 +131,7 @@ def wrap_dataloader(dl):
 
     dl = DataLoaderAdapter(dl)
     dl = TypeCast(dl, index=0, dtype=np.float32)
-    dl = Retuple(dl, data=(0,), target=(1, 2, 3))
+    dl = Retuple(dl, data=(0,), target=(2, 3, 1))
     return dl
 
 def make_loader(manifest_file, alphabet, nbands, max_tscrpt_len, backend_obj):
