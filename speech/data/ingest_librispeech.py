@@ -136,7 +136,7 @@ def wrap_dataloader(dl):
 
 def make_loader(manifest_file, alphabet, nbands, max_tscrpt_len, backend_obj):
     aeon_config = common_config(manifest_file, backend_obj.bsz, alphabet, nbands, max_tscrpt_len)
-    return wrap_dataloader(AeonDataLoader(json.dumps(aeon_config)))
+    return wrap_dataloader(AeonDataLoader(aeon_config))
 
 if __name__ == "__main__":
     import argparse
