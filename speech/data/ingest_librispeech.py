@@ -106,7 +106,7 @@ def common_config(manifest_file, batch_size, alphabet, nbands, max_tscrpt_len):
 
     audio_config = {"type": "audio",
                             "sample_freq_hz": 16000,
-                            "max_duration": "30 seconds",
+                            "max_duration": "40 seconds",
                             "frame_length": "25 milliseconds",
                             "frame_stride": "10 milliseconds",
                             "feature_type": "mfsc",
