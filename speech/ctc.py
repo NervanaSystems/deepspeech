@@ -117,7 +117,7 @@ class CTC(Cost):
                 label_lens,
                 input_lens,
                 costs)
-        elif self.be.backend_name == "cpu":
+        elif self.be.backend_name == "cpu" or self.be.backend_name == "mkl":
             self.be_ctc_cpu(
                 inputs,
                 labels,
