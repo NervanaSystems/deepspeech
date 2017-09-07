@@ -129,7 +129,6 @@ def wrap_dataloader(dl):
     (index 0) from int8 to float32 and repack the data into (audio, 3-tuple).
     """
 
-    dl = DataLoaderAdapter(dl)
     dl = TypeCast(dl, index=0, dtype=np.float32)
     dl = Retuple(dl, data=(0,), target=(2, 3, 1))
     return dl
