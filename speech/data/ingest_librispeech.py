@@ -35,7 +35,7 @@ def write_manifest(output_file, *filenames):
 
     with open(output_file, "w") as fid:
         fid.write("@FILE\tFILE\n");
-	for line in zip(*filenames):
+        for line in zip(*filenames):
             fid.write("\t".join(line) + "\n")
 
     return True
