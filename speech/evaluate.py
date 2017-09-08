@@ -44,6 +44,8 @@ parser.add_argument('--use_wer', action="store_true",
                     help='compute wer instead of cer.')
 parser.add_argument('--inference_file', default=None,
                     help='saves results in inference_file.')
+parser.add_argument('--print_examples', action="store_true",
+                    help='print an example transcript for each batch')
 args = parser.parse_args()
 
 if args.model_file is None:
@@ -100,7 +102,7 @@ model = Model(args.model_file)
 
 # Process data and compute stats
 wer, sample_size, results = get_wer(model, be, eval_set, argmax_decoder, nout,
-                                    use_wer=args.use_wer)
+                                    use_wer=args.use_wer, print_examples=args.print_examples)
 
 print("\n" + "-" * 80)
 if args.use_wer:

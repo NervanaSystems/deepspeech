@@ -24,9 +24,9 @@ Or like this when trained on Librispeech (see "Decoding and evaluating a trained
 1. Make sure you have [neon](https://github.com/NervanaSystems/neon) installed.  
     a. This repo also uses the [aeon](https://github.com/NervanaSystems/aeon) dataloader. If you chose not to install it with neon, you must install it manually.
 
-2. Within a neon virtualenv, run ```pip install python-levenshtein```.
+2. Clone this repository: ```git clone https://github.com/NervanaSystems/deepspeech.git && cd deepspeech```
 
-3. Clone this repository: ```git clone https://github.com/NervanaSystems/deepspeech.git && cd deepspeech```
+3. Within a neon virtualenv, run ```pip install -r requirements.txt```.
 
 4. Run ```make``` to build warp-ctc.
 
