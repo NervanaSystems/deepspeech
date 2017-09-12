@@ -83,8 +83,7 @@ class WordErrorRateCallback(Callback):
 
     def on_epoch_end(self, callback_data, model, epoch):
         cer, disp_proposal, disp_target = self.get_wer(model, self.eval_set)
-        sys.stdout.write('Proposal: ' + (disp_proposal.decode('ISO-8859-1')).encode('utf-8') +
-                         ', Target: ' + (disp_target.decode('ISO-8859-1')).encode('utf-8'))
+        sys.stdout.write('Proposal: ' + disp_proposal + '\n, Target: ' + disp_target)
         sys.stdout.write('\n')
         print("CER (validation) = {}".format(cer))
         sys.stdout.write('\n')
