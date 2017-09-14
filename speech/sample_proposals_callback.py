@@ -70,7 +70,7 @@ class WordErrorRateCallback(Callback):
             utt_lens = strided_tmax * self.dev_to_host(y[2])[0, :] / 100
             disp_indx = np.random.randint(self.be.bsz)
             for mu in range(self.be.bsz):
-                prediction = self.decoder.decode(probs[mu, :, :utt_lens[mu]])
+                prediction = self.decoder.decode(probs[mu, :, :int(utt_lens[mu])])
                 start = int(np.sum(tscrpt_lens[:mu]))
                 target = flat_labels[start:start + tscrpt_lens[mu]].tolist()
                 target = self.decrypt(self.decoder, target, noise_symbol)
@@ -83,8 +83,6 @@ class WordErrorRateCallback(Callback):
 
     def on_epoch_end(self, callback_data, model, epoch):
         cer, disp_proposal, disp_target = self.get_wer(model, self.eval_set)
-        sys.stdout.write('Proposal: ' + (disp_proposal.decode('ISO-8859-1')).encode('utf-8') +
-                         ', Target: ' + (disp_target.decode('ISO-8859-1')).encode('utf-8'))
-        sys.stdout.write('\n')
+        print(u"Proposal: {}".format(disp_proposal))
+        print(u"Target: {}".format(disp_target))
         print("CER (validation) = {}".format(cer))
-        sys.stdout.write('\n')
