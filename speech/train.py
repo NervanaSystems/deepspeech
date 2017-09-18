@@ -24,7 +24,7 @@ from aeon.dataloader import DataLoader
 from neon.backends import gen_backend
 from neon.callbacks.callbacks import Callbacks
 from neon.data.dataloader_transformers import TypeCast, Retuple
-from neon.initializers import GlorotUniform, Constant, Gaussian
+from neon.initializers import Kaiming, Constant, Gaussian
 from neon.layers import Conv, GeneralizedCost, Affine, DeepBiRNN
 from neon.models import Model
 from neon.transforms import Rectlin, Identity, Rectlinclip
@@ -47,27 +47,17 @@ def data_transform(dl):
 
 # Parse the command line arguments
 arg_defaults = {'batch_size': 32}
-
 parser = NeonArgparser(__doc__, default_overrides=arg_defaults)
-parser.add_argument('--nfilters', type=int,
-                    help='no. of conv filters', default=1152)
-parser.add_argument('--filter_width', type=int,
-                    help='width of conv filter', default=11)
-parser.add_argument('--str_w', type=int, help='stride in time', default=3)
-parser.add_argument('--depth', type=int, help='rnn depth', default=9)
+parser.add_argument('--depth', type=int, help='rnn depth', default=7)
 parser.add_argument('--hidden_size', type=int,
-                    help='affine/rnn hidden units', default=1152)
+                    help='affine/rnn hidden units', default=1976)
 parser.add_argument('--lr', type=float,
-                    help='learning rate', default=2e-5)
+                    help='learning rate', default=1e-5)
 parser.add_argument('--momentum', type=float,
                     help='momentum', default=0.99)
 args = parser.parse_args()
 
 # Setup model hyperparameters
-# Convolution layer hyperparameters
-nfilters = args.nfilters  # Number of convolutional filters
-filter_width = args.filter_width  # Width of convolutional filters
-str_w = args.str_w  # Convolutional filter stride
 
 # RNN hyperparameters
 depth = args.depth  # Number of BiRNN layers
@@ -97,7 +87,6 @@ if not os.path.exists(dev_manifest):
         "validation manifest file {} not found".format(dev_manifest))
 
 # Setup required dataloader parameters
-nbands = 13
 max_utt_len = 30
 max_tscrpt_len = 1300
 
@@ -106,8 +95,7 @@ feats_config = dict(sample_freq_hz=16000,
                     max_duration="{} seconds".format(max_utt_len),
                     frame_length=".025 seconds",
                     frame_stride=".01 seconds",
-                    feature_type="mfsc",
-                    num_filters=nbands)
+                    feature_type="specgram")
 
 # Transcript transformation parameters
 transcripts_config = dict(
@@ -130,6 +118,7 @@ dev_cfg_dict = dict(type="audio,transcription",
                     minibatch_size=be.bsz)
 train = DataLoader(backend=be, config=train_cfg_dict)
 train = data_transform(train)
+
 dev = DataLoader(backend=be, config=dev_cfg_dict)
 dev = data_transform(dev)
 
@@ -137,36 +126,43 @@ dev = data_transform(dev)
 # Softmax is performed in warp-ctc, so we use an Identity activation in the
 # final layer.
 gauss = Gaussian(scale=0.01)
-glorot = GlorotUniform()
+kaiming = Kaiming()
+
 layers = [
     Conv(
-        (nbands,
-         filter_width,
-         nfilters),
+        (41, 11, 32),
         init=gauss,
-        bias=Constant(0),
         activation=Rectlin(),
-        padding=dict(
-            pad_h=0,
-            pad_w=5),
-        strides=dict(
-            str_h=1,
-            str_w=str_w)),
+        padding=dict(pad_h=20, pad_w=5),
+        strides=dict(str_h=2, str_w=3), batch_norm=True),
+    Conv(
+        (21, 11, 32),
+        init=gauss,
+        activation=Rectlin(),
+        padding=dict(pad_h=10, pad_w=5),
+        strides=dict(str_h=2, str_w=1), batch_norm=True),
+    Conv(
+        (21, 11, 96),
+        init=gauss,
+        activation=Rectlin(),
+        padding=dict(pad_h=10, pad_w=5),
+        strides=dict(str_h=2, str_w=1), batch_norm=True),
     DeepBiRNN(
         hidden_size,
-        init=glorot,
+        init=kaiming,
         activation=Rectlinclip(),
         batch_norm=True,
         reset_cells=True,
         depth=depth),
     Affine(
         hidden_size,
-        init=glorot,
-        activation=Rectlinclip()),
+        init=kaiming,
+        activation=Rectlinclip(),
+        batch_norm=True),
     Affine(
         nout=nout,
-        init=glorot,
-        activation=Identity())]
+        init=kaiming,
+        activation=Identity(), batch_norm=True)]
 
 model = Model(layers=layers)
 
@@ -185,3 +181,4 @@ cost = GeneralizedCost(costfunc=CTC(max_tscrpt_len, nout=nout))
 # Fit the model
 model.fit(train, optimizer=opt, num_epochs=args.epochs,
           cost=cost, callbacks=callbacks)
+
