@@ -32,7 +32,7 @@ from neon.util.argparser import NeonArgparser, extract_valid_args
 from ctc import CTC
 from decoder import ArgMaxDecoder
 from sample_proposals_callback import WordErrorRateCallback
-from speech.data.dataloader import make_loader
+from data.dataloader import make_loader
 
 # Parse the command line arguments
 arg_defaults = {'batch_size': 32}

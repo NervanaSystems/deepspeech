@@ -42,8 +42,7 @@ def get_wer(model, be, dataset, decoder, nout, use_wer=False, print_examples=Fal
     batchcount = 0
     predictions = list()
     targets = list()
-    numitems = dataset.item_count
-    nbatches = int(np.ceil(numitems/be.bsz))
+    nbatches = dataset.nbatches
 
     if not model.initialized:
         model.initialize(dataset)

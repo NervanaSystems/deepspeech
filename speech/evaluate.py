@@ -18,24 +18,14 @@ import os
 import numpy as np
 import pickle as pkl
 
-from aeon.dataloader import DataLoader
 from neon.backends import gen_backend
 from neon.util.argparser import NeonArgparser, extract_valid_args
 from neon.models import Model
-from speech.data.dataloader import make_loader
 
 from decoder import ArgMaxDecoder
 from utils import get_wer
 
-
-def data_transform(dl):
-    """ Data is loaded from Aeon as a 4-tuple. We need to cast the audio
-    (index 0) from int8 to float32 and repack the data into (audio, 3-tuple).
-    """
-
-    dl = TypeCast(dl, index=0, dtype=np.float32)
-    dl = Retuple(dl, data=(0,), target=(1, 2, 3))
-    return dl
+from data.dataloader import make_loader
 
 # Parse the command line arguments
 arg_defaults = {'batch_size': 32}
