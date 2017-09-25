@@ -21,12 +21,12 @@ Or like this when trained on Librispeech (see "Decoding and evaluating a trained
 | the design was different but the thing was clearly the same | the design was differampat that thing was clarly the same |
 
 ## Getting Started
-1. Make sure you have [neon] (https://github.com/NervanaSystems/neon) installed.  
-    a. This repo also uses the [aeon] (https://github.com/NervanaSystems/aeon) dataloader. If you chose not to install it with neon, you must install it manually.
+1. Make sure you have [neon](https://github.com/NervanaSystems/neon) installed.  
+    a. This repo also uses the [aeon](https://github.com/NervanaSystems/aeon) dataloader. If you chose not to install it with neon, you must install it manually.
 
-2. Within a neon virtualenv, run ```pip install python-levenshtein```.
+2. Clone this repository: ```git clone https://github.com/NervanaSystems/deepspeech.git && cd deepspeech```
 
-3. Clone this repository: ```git clone https://github.com/NervanaSystems/deepspeech.git && cd deepspeech```
+3. Within a neon virtualenv, run ```pip install -r requirements.txt```.
 
 4. Run ```make``` to build warp-ctc.
 
@@ -76,7 +76,7 @@ python train.py --manifest train:<training manifest> --manifest val:<validation 
 where `<training manifest>` is the path to the training manifest file produced in the ingest step above (e.g. ``/usr/local/data/librispeech/train-clean-100/train-manifest.csv`` in the example above) and `<validation manifest>` is the path to the validation manifest file.
  
 ### 2b. Continue training a previous model
-If you have a previously trained model, you can resume training by passing the `--model_file </path/to/pre-trained_model>` argument to `train.py`. For example, you could continue training a pre-trained model from our [Model Zoo] (https://github.com/NervanaSystems/ModelZoo). This particular model was trained using 1000 hours of speech data from the [Librispeech corpus] (<http://www.openslr.org/12/>). The model was trained for 16 epochs after attaining a character error rate (CER) of 14% without using a language model. You could continue training it for, say, an additional 4 epochs, by calling 
+If you have a previously trained model, you can resume training by passing the `--model_file </path/to/pre-trained_model>` argument to `train.py`. For example, you could continue training a pre-trained model from our [Model Zoo](https://github.com/NervanaSystems/ModelZoo). This particular model was trained using 1000 hours of speech data from the [Librispeech corpus](<http://www.openslr.org/12/>). The model was trained for 16 epochs after attaining a character error rate (CER) of 14% without using a language model. You could continue training it for, say, an additional 4 epochs, by calling 
 ```
 python train.py --manifest train:<training manifest> --manifest val:<validation manifest> -e20  -z <batch_size> -s </path/to/model_output.prm> --model_file </path/to/pre-trained_model> [-b <backend>] 
 ```
@@ -89,11 +89,11 @@ Once you have a trained model, you can easily evaluate its performance on any gi
  ```
 replacing the file paths as needed. This will print out character error rates by default. To print word error rates, include the argument `--use_wer`.
 
-For example, you could evaluate our pre-trained model from our [Model Zoo] (https://github.com/NervanaSystems/ModelZoo). To evaluate the pre-trained model, you would first need to 
+For example, you could evaluate our pre-trained model from our [Model Zoo](https://github.com/NervanaSystems/ModelZoo). To evaluate the pre-trained model, you would first need to 
 
 1. download some test data from the Librispeech ASR corpus and prepare a manifest file for the dataset following the prescription provided above.  
 
-2. download the pre-trained model from our [Model Zoo] (https://s3-us-west-1.amazonaws.com/nervana-modelzoo/Deep_Speech/Librispeech/librispeech_16_epochs.prm)
+2. download the pre-trained model from our [Model Zoo](https://s3-us-west-1.amazonaws.com/nervana-modelzoo/Deep_Speech/Librispeech/librispeech_16_epochs.prm)
 
 Once you have the pre-trained model and the manifest file for the test data, you would evaluate the model by calling `evaluate.py` as indicated above.
 

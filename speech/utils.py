@@ -14,15 +14,10 @@
 # limitations under the License.
 # ----------------------------------------------------------------------------
 
-import numpy as np
 import sys
+import numpy as np
+from tqdm import tqdm
 
-
-def get_progress_string(bsz, bcount, nbatches, blockchar=u'\u2588'):
-    max_bar_width = 50
-    bar_width = int(float(bcount) / nbatches * max_bar_width)
-    s = u'[|{:<%s}| processed {:4}/{:<4} examples]' % max_bar_width
-    return s.format(blockchar * bar_width, bcount * bsz, nbatches * bsz)
 
 def softmax(x):
     return (np.reciprocal(np.sum(
@@ -42,25 +37,26 @@ def decrypt(decoder, message):
     msg = decoder.convert_to_string(message)
     return decoder.process_string(msg, remove_repetitions=False)
 
-def get_wer(model, be, dataset, decoder, nout, use_wer=False):
+def get_wer(model, be, dataset, decoder, nout, use_wer=False, print_examples=False):
     wer = 0
     batchcount = 0
     predictions = list()
     targets = list()
     numitems = dataset.item_count
-    nbatches = numitems/be.bsz
+    nbatches = int(np.ceil(numitems/be.bsz))
 
     if not model.initialized:
         model.initialize(dataset)
- 
-    for x, y in dataset:
+    
+    progress_bar = tqdm(dataset, total=nbatches, unit="batches")
+    for x, y in progress_bar:
         probs = get_outputs(model, be, x, nout)
         strided_tmax = probs.shape[-1]
         flat_labels = y[0].get().ravel()
         tscrpt_lens = y[1].get().ravel()
         utt_lens = strided_tmax * y[2].get().ravel() / 100
         for mu in range(be.bsz):
-            prediction = decoder.decode(probs[mu, :, :utt_lens[mu]])
+            prediction = decoder.decode(probs[mu, :, :int(utt_lens[mu])])
             start = int(np.sum(tscrpt_lens[:mu]))
             target = flat_labels[start:start + tscrpt_lens[mu]].tolist()
             target = decrypt(decoder, target)
@@ -72,12 +68,13 @@ def get_wer(model, be, dataset, decoder, nout, use_wer=False):
                 wer += decoder.wer(prediction, target) / \
                         float(len(target.split()))
         
-        progress_string = get_progress_string(be.bsz, batchcount, nbatches)
-        last_strlen = len(progress_string)
-        sys.stdout.write('\r' + ' ' * last_strlen + '\r')
-        sys.stdout.write(progress_string.encode("utf-8"))
-        sys.stdout.flush()
-        batchcount += 1
+        if use_wer:
+            progress_bar.set_description("WER: {}".format(wer / len(predictions)))
+        else:
+            progress_bar.set_description("CER: {}".format(wer / len(predictions)))
+        if print_examples is True:
+            progress_bar.write("Transcribed: {}".format(predictions[-1]))
+            progress_bar.write("Target:      {}".format(targets[-1]))
 
     results = zip(predictions, targets)
     nsamples = len(predictions)
