@@ -32,7 +32,7 @@ from neon.util.argparser import NeonArgparser, extract_valid_args
 from ctc import CTC
 from decoder import ArgMaxDecoder
 from sample_proposals_callback import WordErrorRateCallback
-from data.ingest_librispeech import make_loader
+from data.dataloader import make_loader
 
 # Parse the command line arguments
 arg_defaults = {'batch_size': 32}
@@ -78,6 +78,7 @@ be = gen_backend(**extract_valid_args(args, gen_backend))
 # Setup dataloader
 nbands = 13
 max_tscrpt_len = 1300
+max_utt_len = 30
 
 train_manifest = args.manifest['train']
 if not os.path.exists(train_manifest):
@@ -88,8 +89,8 @@ if not os.path.exists(dev_manifest):
     raise RuntimeError(
         "validation manifest file {} not found".format(dev_manifest))
 
-train = make_loader(train_manifest, alphabet, nbands, max_tscrpt_len, backend_obj=be)
-dev = make_loader(dev_manifest, alphabet, nbands, max_tscrpt_len, backend_obj=be)
+train = make_loader(train_manifest, alphabet, nbands, max_tscrpt_len, max_utt_len, backend_obj=be)
+dev = make_loader(dev_manifest, alphabet, nbands, max_tscrpt_len, max_utt_len, backend_obj=be)
 
 # Setup the layers of the DNN
 # Softmax is performed in warp-ctc, so we use an Identity activation in the
