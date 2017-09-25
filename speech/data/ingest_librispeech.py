@@ -14,31 +14,26 @@
 # limitations under the License.
 # ----------------------------------------------------------------------------
 
-import numpy as np
-import os
-import logging
 import glob
-import fnmatch
-import json
-
-from neon.data.aeon_shim import AeonDataLoader
-from neon.data.dataloaderadapter import DataLoaderAdapter
-from neon.data.dataloader_transformers import TypeCast, Retuple
+import logging
+import os
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
 
 def write_manifest(output_file, *filenames):
     """ Writes out a manifest file from a series of lists of filenames
     """
 
     with open(output_file, "w") as fid:
-        fid.write("@FILE\tFILE\n");
+        fid.write("@{}\n".format("\t".join(["FILE"] * len(filenames))))
         for line in zip(*filenames):
             fid.write("\t".join(line) + "\n")
 
     return True
+
 
 def main(input_directory, transcript_directory, manifest_file):
     """ Finds all .flac files recursively in input_directory, then extracts the 
@@ -102,40 +97,22 @@ def main(input_directory, transcript_directory, manifest_file):
     logger.info("Writing manifest file to {}".format(manifest_file))
     return write_manifest(manifest_file, audio_files, txt_files)
 
-def common_config(manifest_file, batch_size, alphabet, nbands, max_tscrpt_len):
 
-    audio_config = {"type": "audio",
-                            "sample_freq_hz": 16000,
-                            "max_duration": "30 seconds",
-                            "frame_length": "25 milliseconds",
-                            "frame_stride": "10 milliseconds",
-                            "feature_type": "mfsc",
-                            "emit_length": True,
-                            "num_filters": nbands}
+def convert_aeon_manifests(old_manifest, new_manifest):
+    """Convert an Aeon < 1.0 manifest to an Aeon >= 1.0 manifest"""
+    try:
+        with open(old_manifest, "r") as old:
+            with open(new_manifest, "w") as new:
+                lines = old.readlines()
+                nfields = len(lines[0].split(","))
+                new.write("@{}\n".format("\t".join(["FILE"] * nfields)))
+                for line in lines:
+                    new_line = "\t".join(line.strip().split(","))
+                    new.write("{}\n".format(new_line))
+    except:
+        return False
+    return True
 
-    transcription_config = {"type": "char_map",
-                                      "alphabet": alphabet,
-                                      "emit_length": True,
-                                      "max_length": max_tscrpt_len}
-
-    return {'manifest_filename': manifest_file,
-            'manifest_root': os.path.dirname(manifest_file),
-            'batch_size': batch_size,
-            'block_size': batch_size,
-            'etl': [audio_config, transcription_config]}
-
-def wrap_dataloader(dl):
-    """ Data is loaded from Aeon as a 4-tuple. We need to cast the audio
-    (index 0) from int8 to float32 and repack the data into (audio, 3-tuple).
-    """
-
-    dl = TypeCast(dl, index=0, dtype=np.float32)
-    dl = Retuple(dl, data=(0,), target=(2, 3, 1))
-    return dl
-
-def make_loader(manifest_file, alphabet, nbands, max_tscrpt_len, backend_obj):
-    aeon_config = common_config(manifest_file, backend_obj.bsz, alphabet, nbands, max_tscrpt_len)
-    return wrap_dataloader(AeonDataLoader(aeon_config))
 
 if __name__ == "__main__":
     import argparse
