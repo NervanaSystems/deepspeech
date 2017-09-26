@@ -21,8 +21,8 @@ Or like this when trained on Librispeech (see "Decoding and evaluating a trained
 | the design was different but the thing was clearly the same | the design was differampat that thing was clarly the same |
 
 ## Getting Started
-1. Make sure you have [neon](https://github.com/NervanaSystems/neon) installed.  
-    a. This repo also uses the [aeon](https://github.com/NervanaSystems/aeon) dataloader. If you chose not to install it with neon, you must install it manually.
+1. Make sure you have [neon 2.2.0](https://github.com/NervanaSystems/neon) installed.  
+    a. This repo also uses the [aeon](https://github.com/NervanaSystems/aeon) dataloader (v1.0.0). If you chose not to install it with neon, you must install it manually.
 
 2. Clone this repository: ```git clone https://github.com/NervanaSystems/deepspeech.git && cd deepspeech```
 
