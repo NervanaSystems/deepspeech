@@ -13,11 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ----------------------------------------------------------------------------
-import os
-import logging
-import glob
-import fnmatch
 
+import glob
+import logging
+import os
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -29,8 +28,9 @@ def write_manifest(output_file, *filenames):
     """
 
     with open(output_file, "w") as fid:
+        fid.write("@{}\n".format("\t".join(["FILE"] * len(filenames))))
         for line in zip(*filenames):
-            fid.write(",".join(line) + "\n")
+            fid.write("\t".join(line) + "\n")
 
     return True
 
@@ -96,6 +96,22 @@ def main(input_directory, transcript_directory, manifest_file):
 
     logger.info("Writing manifest file to {}".format(manifest_file))
     return write_manifest(manifest_file, audio_files, txt_files)
+
+
+def convert_aeon_manifests(old_manifest, new_manifest):
+    """Convert an Aeon < 1.0 manifest to an Aeon >= 1.0 manifest"""
+    try:
+        with open(old_manifest, "r") as old:
+            with open(new_manifest, "w") as new:
+                lines = old.readlines()
+                nfields = len(lines[0].split(","))
+                new.write("@{}\n".format("\t".join(["FILE"] * nfields)))
+                for line in lines:
+                    new_line = "\t".join(line.strip().split(","))
+                    new.write("{}\n".format(new_line))
+    except:
+        return False
+    return True
 
 
 if __name__ == "__main__":
