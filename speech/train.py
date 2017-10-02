@@ -61,6 +61,7 @@ parser.add_argument('--lr', type=float,
                     help='learning rate', default=2e-5)
 parser.add_argument('--momentum', type=float,
                     help='momentum', default=0.99)
+
 args = parser.parse_args()
 
 # Setup model hyperparameters
@@ -85,6 +86,7 @@ argmax_decoder = ArgMaxDecoder(alphabet, space_index=alphabet.index(" "))
 
 # Initialize our backend
 be = gen_backend(**extract_valid_args(args, gen_backend))
+be.use_cudac_kernels = True  # disable compound unroll kernels for logging
 
 # Setup dataloader
 train_manifest = args.manifest['train']
