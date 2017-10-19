@@ -29,9 +29,11 @@ def get_outputs(model, be, inputs, nout):
     return softmax(outputs.get()).reshape(
         (nout, -1, be.bsz)).transpose((2, 0, 1))
 
-def eval_model(model, dataset, nout, bsz):
-    return [((get_outputs(model, x, nout, bsz),
-              y[0]), y[2]) for (x, y) in dataset]
+def eval_model(model, dataset, nout, inference=False):
+    if inference is True:
+        return [(get_outputs(model, model.be, x, nout), x_len) for x, x_len in dataset]
+    else:
+        return [((get_outputs(model, model.be, x, nout), y[0]), y[2]) for (x, y) in dataset]
 
 def decrypt(decoder, message):
     msg = decoder.convert_to_string(message)

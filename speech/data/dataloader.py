@@ -42,13 +42,33 @@ def common_config(manifest_file, batch_size, alphabet, nbands, max_tscrpt_len, m
             'etl': [audio_config, transcription_config]}
 
 
-def wrap_dataloader(dl):
+def inference_config(manifest_file, batch_size, nbands, max_utt_len):
+    """ Aeon configuration for inference with only audio files"""
+
+    audio_config = {"type": "audio",
+                    "sample_freq_hz": 16000,
+                    "max_duration": "{} seconds".format(max_utt_len),
+                    "frame_length": "25 milliseconds",
+                    "frame_stride": "10 milliseconds",
+                    "feature_type": "mfsc",
+                    "emit_length": True,
+                    "num_filters": nbands}
+
+    return {'manifest_filename': manifest_file,
+            'manifest_root': os.path.dirname(manifest_file),
+            'batch_size': batch_size,
+            'block_size': batch_size,
+            'etl': [audio_config,]}
+
+
+def wrap_dataloader(dl, target=True):
     """ Data is loaded from Aeon as a 4-tuple. We need to cast the audio
     (index 0) from int8 to float32 and repack the data into (audio, 3-tuple).
     """
 
     dl = TypeCast(dl, index=0, dtype=np.float32)
-    dl = Retuple(dl, data=(0,), target=(2, 3, 1))
+    if target:
+        dl = Retuple(dl, data=(0,), target=(2, 3, 1))
     return dl
 
 
@@ -56,3 +76,9 @@ def make_loader(manifest_file, alphabet, nbands, max_tscrpt_len, max_utt_len, ba
     aeon_config = common_config(manifest_file, backend_obj.bsz, alphabet, nbands, max_tscrpt_len,
                                 max_utt_len)
     return wrap_dataloader(AeonDataLoader(aeon_config))
+
+
+def make_inference_loader(manifest_file, nbands, max_utt_len, backend_obj):
+    aeon_config = inference_config(manifest_file, backend_obj.bsz, nbands,
+                                   max_utt_len)
+    return wrap_dataloader(AeonDataLoader(aeon_config), target=False)
