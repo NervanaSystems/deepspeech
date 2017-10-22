@@ -1,0 +1,1 @@
+python train.py --manifest train:/dataset/librispeech/train-clean-100/train-manifest.csv --manifest val:/dataset/librispeech/train-clean-100/val-manifest.csv -e20 -z 32 --model_file librispeech_16_epochs.prm -b gpu -i 1 --data_log /dataset/hanlin/results_output_102117/DS2_pretrained_sparsity --num_iterations 5 --max_log_elements 300
