@@ -111,7 +111,7 @@ $ cat /path/to/100_hour_manifest.csv /path/to/360_hour_manifest.csv /path/to/540
 ### 2a. Train a new model
 
 ```
-python train.py --manifest train:<training manifest> --manifest val:<validation manifest> -e <num_epochs> -z <batch_size> -s </path/to/model_output.pkl> [-b <backend>] 
+$ python train.py --manifest train:<training manifest> --manifest val:<validation manifest> -e <num_epochs> -z <batch_size> -s </path/to/model_output.pkl> [-b <backend>] 
 ```
 
 where `<training manifest>` is the path to the training manifest file produced 
@@ -136,20 +136,19 @@ $ python train.py --manifest train:<training manifest> --manifest val:<validatio
 which will save a new model to `model_output.prm`. 
 
 ## Decoding and evaluating a trained model
-After you have a trained model, you can easily evaluate its performance on any 
+After you have a trained model, it's easy to evaluate its performance on any 
 given dataset. Simply create a manifest file and then call:
 
 ```
 $ python evaluate.py --manifest val:/path/to/manifest.csv --model_file /path/to/saved_model.prm
 ```
 
-replacing the file paths as needed. This will print out CERs (character error 
-rates) by default. To instead print word error rates, include the argument 
+replacing the file paths as needed. It prints CERs (Character Error Rates) by 
+default. To instead print WERs (Word Error Rates), include the argument 
 `--use_wer`.
 
-For example, you could evaluate our pre-trained model from our [Model Zoo]
-. To evaluate the 
-pre-trained model, follow these steps: 
+For example, you could evaluate our pre-trained model from our [Model Zoo]. To 
+evaluate the pre-trained model, follow these steps: 
 
 1. Download some test data from the Librispeech ASR corpus and prepare a 
    manifest file for the dataset that follows the prescription provided above.  
