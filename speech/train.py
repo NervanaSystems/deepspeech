@@ -50,6 +50,9 @@ parser.add_argument('--lr', type=float,
                     help='learning rate', default=2e-5)
 parser.add_argument('--momentum', type=float,
                     help='momentum', default=0.99)
+parser.add_argument('--bn_pct', type=float, default=100, help='subset of data for batch-norm approx.default is 100(entire data)')
+parser.add_argument('--shuffle', type=bool, default=False, help='turn shuffle on if using a seed for selecting random subsets of data')
+parser.add_argument('--shuffle_seed', type=int, default=0, help='seed used for data shuffle to select subset for batch-norm')
 args = parser.parse_args()
 
 # Setup model hyperparameters
@@ -99,11 +102,16 @@ gauss = Gaussian(scale=0.01)
 glorot = GlorotUniform()
 layers = [
     Conv(
-        (nbands,
+        fshape=(nbands,
          filter_width,
          nfilters),
         init=gauss,
-        bias=Constant(0),
+        bn_pct=args.bn_pct,
+        shuffle=args.shuffle,
+        shuffle_seed=args.shuffle_seed,
+        batch_norm=True,
+        bias=None,
+        #bias=Constant(0),
         activation=Rectlin(),
         padding=dict(
             pad_h=0,
@@ -117,7 +125,10 @@ layers = [
         activation=Rectlinclip(),
         batch_norm=True,
         reset_cells=True,
-        depth=depth),
+        depth=depth,
+        bn_pct=args.bn_pct,
+        shuffle=args.shuffle,
+        shuffle_seed=args.shuffle_seed),
     Affine(
         hidden_size,
         init=glorot,
